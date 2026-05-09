@@ -1115,7 +1115,7 @@ function generateBuffers(data,data_type) {
   return buffer_object;
 }
 
-function initBuffers(num_cubes,scenery_vertices,scenery_texture_coordinates,scenery_vertex_indices) { // Load scenery data ( from models.js and level_*.js files ) into the various buffers to make the 3D models
+function initBuffers(num_cubes,scenery_vertices,scenery_texture_coordinates,scenery_vertex_indices) { // Load scenery data into the various buffers to make the 3D models
 
   sceneryVerticesBuffer = generateBuffers(scenery_vertices,"ARRAY_BUFFER");
   sceneryVerticesTextureCoordBuffer = generateBuffers(scenery_texture_coordinates,"ARRAY_BUFFER");
