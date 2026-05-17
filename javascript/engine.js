@@ -29,10 +29,11 @@ let textureCoordAttribute;
 let phase_of_game = "game";
 let score = 0;
 let level = 0;
-let character_image = ["images/zombiea.png","images/zombiea.png", "images/zombiec.png", "images/zombied.png"];
+let character_image = ["images/zombiea.png","images/zombieb.png", "images/zombiec.png", "images/zombied.png"];
 let cube_texture_image = "images/building.png";
 let floor_texture_image = "images/streets.png";
 let sea_texture_image = "images/sea.png";
+let sky_texture_image = "images/sky.png";
 
 let characters_x = [
 -1500,-1100,-700,-300,100,500,900,1300,
@@ -83,9 +84,9 @@ let characters_direction = [
 ];
 
 let x_location = -450;
-let z_location = -450;
+let z_location = -500;
 let y_location = -30;
-let camera_angle = 260;
+let camera_angle = 280;
 let floorVerticesBuffer;
 let seaVerticesBuffer;
 let floorVerticesTextureCoordBuffer;
@@ -183,8 +184,8 @@ let sprite_texture_coordinates = [
 
 
 let sea_vertices = [
-    -4500, -5, -1000,
-    4500, -5, -1000,
+    -4500, -5, -4000,
+    4500, -5, -4000,
     4500, -5, 4000,
     -4500, -5,  4000,
 ];
@@ -195,8 +196,6 @@ let floor_vertex_indices = [
     0,  2,  3, 
 ];
 	
-
-
  let floor_vertices = [
     -1900, 0, -1900,
      2100, 0, -1900,
@@ -206,9 +205,16 @@ let floor_vertex_indices = [
 
 let floor_texture_coordinates = [
     0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0
+    5.0, 0.0,
+    5.0, 5.0,
+    0.0, 5.0
+];
+
+let sky_vertices = [
+    -4500, 200, -4000,
+    4500, 200, -4000,
+    4500, 200, 4000,
+    -4500, 200,  4000,
 ];
 
 // Section 2a: data to represent the main game area ( logical this would probably go in a file of its own )
@@ -253,7 +259,7 @@ function start() {
   // Only continue if WebGL is available and working in this browser
   if (gl) {
 	  
-    gl.clearColor(0.5, 0.8, 0.9, 1.0);  // Blue sky, fully opaque
+    gl.clearColor(0.086, 0.314, 0.565, 1.0);  // Blue sky, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
@@ -302,7 +308,7 @@ function GraphicsLoop(num_cubes) {
   moveTranslate([x_location, y_location, z_location]);
   DrawScenery(num_cubes);
   DrawCharacters();
-  DisplayFloorCeiling();
+  DisplayFloorSky();
   frames++;
 }
 
@@ -568,7 +574,7 @@ function DrawScenery(num_cubes) {
   movePopMatrix();
 }
 
-function DisplayFloorCeiling() {
+function DisplayFloorSky() {
 
   movePushMatrix();
   
@@ -594,6 +600,19 @@ function DisplayFloorCeiling() {
   gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, seaVerticesBuffer);
+  gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, floorVerticesIndexBuffer);
+  setMatrixUniforms();
+  gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, floorVerticesTextureCoordBuffer);
+  gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, game_texture[7]);
+  gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, skyVerticesBuffer);
   gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, floorVerticesIndexBuffer);
   setMatrixUniforms();
@@ -1115,7 +1134,7 @@ function generateBuffers(data,data_type) {
   return buffer_object;
 }
 
-function initBuffers(num_cubes,scenery_vertices,scenery_texture_coordinates,scenery_vertex_indices) { // Load scenery data into the various buffers to make the 3D models
+function initBuffers(num_cubes,scenery_vertices,scenery_texture_coordinates,scenery_vertex_indices) { // Load scenery data ( from models.js and level_*.js files ) into the various buffers to make the 3D models
 
   sceneryVerticesBuffer = generateBuffers(scenery_vertices,"ARRAY_BUFFER");
   sceneryVerticesTextureCoordBuffer = generateBuffers(scenery_texture_coordinates,"ARRAY_BUFFER");
@@ -1124,6 +1143,7 @@ function initBuffers(num_cubes,scenery_vertices,scenery_texture_coordinates,scen
   spriteVerticesTextureCoordBuffer = generateBuffers(sprite_texture_coordinates,"ARRAY_BUFFER");
   spriteVerticesIndexBuffer = generateBuffers(sprite_vertex_indices,"ELEMENT_ARRAY_BUFFER");
   floorVerticesBuffer = generateBuffers(floor_vertices,"ARRAY_BUFFER"); 
+  skyVerticesBuffer = generateBuffers(sky_vertices,"ARRAY_BUFFER"); 
   seaVerticesBuffer = generateBuffers(sea_vertices,"ARRAY_BUFFER");
   floorVerticesTextureCoordBuffer = generateBuffers(floor_texture_coordinates,"ARRAY_BUFFER");
   floorVerticesIndexBuffer = generateBuffers(floor_vertex_indices,"ELEMENT_ARRAY_BUFFER");
@@ -1150,6 +1170,7 @@ function initTextures() {
   PrepareGameTextures(sea_texture_image,4);
   PrepareGameTextures(cube_texture_image,5);
   PrepareGameTextures(floor_texture_image,6);
+  PrepareGameTextures(sky_texture_image,7);
   
 }
 
